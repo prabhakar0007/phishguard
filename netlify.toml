@@ -1,0 +1,6 @@
+# PhishGuard — Netlify deploy config.
+# The live static website (English UI + PDF scanner + in-browser ML model)
+# lives in the site/ folder. The repo root holds the Flask app, whose
+# template must NOT be published as-is.
+[build]
+  publish = "site"
