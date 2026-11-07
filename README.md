@@ -4,8 +4,10 @@ A machine-learning system that checks any link and tells you whether it
 looks **legitimate or phishing** — with a risk score and plain-language
 reasons for the verdict. Comes with a web UI and a JSON API.
 
-> Stage 1 of the PhishGuard project (model + website). A Chrome extension
-> that warns you *before* a phishing page opens is Stage 2.
+> **Stage 1** (model + website) and **Stage 2** (Chrome extension, in
+> [`extension/`](extension/)) are both complete. The extension runs the
+> model entirely inside the browser and blocks phishing pages *before*
+> they load.
 
 ## Results (honest, held-out test set)
 
