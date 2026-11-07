@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhishGuard — Phishing Link Checker</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #070b09;
+         color: #e6f5e9; min-height: 100vh; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 32px 18px 60px; }
+  header { text-align: center; margin-bottom: 26px; }
+  .logo { font-size: 44px; }
+  h1 { font-size: 34px; letter-spacing: 1px; color: #4ade80; }
+  h1 span { color: #e6f5e9; }
+  .tag { color: #9fd8a8; margin-top: 6px; font-size: 15px; }
+  .stats { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+           margin: 20px 0 28px; }
+  .stat { background: #0e1510; border: 1px solid #1e3a24; border-radius: 12px;
+          padding: 10px 16px; text-align: center; min-width: 120px; }
+  .stat b { display: block; font-size: 20px; color: #4ade80; }
+  .stat small { color: #9fd8a8; font-size: 11px; letter-spacing: .5px; }
+  .box { background: #0e1510; border: 1px solid #1e3a24; border-radius: 16px;
+         padding: 22px; box-shadow: 0 12px 40px rgba(0,0,0,.45); }
+  label { font-size: 14px; color: #9fd8a8; display: block; margin-bottom: 10px; }
+  .row { display: flex; gap: 10px; }
+  input { flex: 1; background: #070b09; border: 1px solid #2b4a32; color: #e6f5e9;
+          border-radius: 10px; padding: 14px; font-size: 15px; outline: none; }
+  input:focus { border-color: #4ade80; }
+  button { background: #22c55e; color: #04140a; border: 0; font-weight: 700;
+           padding: 14px 22px; border-radius: 10px; font-size: 15px; cursor: pointer; }
+  button:hover { background: #4ade80; }
+  .chips { margin-top: 14px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { font-size: 12px; border: 1px solid #2b4a32; color: #9fd8a8;
+          background: transparent; padding: 7px 12px; border-radius: 20px;
+          cursor: pointer; font-weight: 400; }
+  .chip:hover { border-color: #4ade80; color: #e6f5e9; }
+  #result { margin-top: 22px; display: none; border-radius: 14px; padding: 20px;
+            border: 1px solid #2b4a32; }
+  #result.high { background: #2a0e0e; border-color: #7f1d1d; }
+  #result.medium { background: #2a230a; border-color: #713f12; }
+  #result.low { background: #0c2416; border-color: #14532d; }
+  .verdict { font-size: 26px; font-weight: 800; letter-spacing: .5px; }
+  .high .verdict { color: #f87171; } .medium .verdict { color: #facc15; }
+  .low .verdict { color: #4ade80; }
+  .meter { height: 12px; background: #00000055; border-radius: 8px; margin: 14px 0 6px;
+           overflow: hidden; }
+  .meter i { display: block; height: 100%; width: 0; transition: width .6s ease; }
+  .high .meter i { background: #ef4444; } .medium .meter i { background: #eab308; }
+  .low .meter i { background: #22c55e; }
+  .pct { font-size: 13px; color: #e6f5e9cc; }
+  ul { margin: 14px 0 0 18px; line-height: 1.65; font-size: 14.5px; }
+  .note { margin-top: 26px; font-size: 12.5px; color: #7d9b85; text-align: center;
+          line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">🛡️</div>
+    <h1>PHISH<span>GUARD</span></h1>
+    <p class="tag">Koi bhi shak wala link paste karo — ML model batayega: asal hai ya phishing?</p>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><b>{{ (metrics.accuracy * 100) | round(1) }}%</b><small>TEST ACCURACY</small></div>
+    <div class="stat"><b>{{ metrics.dataset_rows }}</b><small>REAL URLs PAR TRAINED</small></div>
+    <div class="stat"><b>{{ (metrics.recall_phishing * 100) | round(1) }}%</b><small>PHISHING PAKDE</small></div>
+  </div>
+
+  <div class="box">
+    <label for="url">🔗 Check karne wala link yahan dalo:</label>
+    <div class="row">
+      <input id="url" type="text" placeholder="https://example.com/login" autocomplete="off">
+      <button id="go">Check Karo</button>
+    </div>
+    <div class="chips">
+      <button class="chip" data-u="https://www.google.com">✅ Asal: google.com</button>
+      <button class="chip" data-u="http://paypal-secure-login.xyz/verify/account?update=1">🎣 Nakli: PayPal wala</button>
+      <button class="chip" data-u="http://192.168.4.7/sbi-kyc-update/login">🎣 Nakli: SBI KYC wala</button>
+    </div>
+
+    <div id="result">
+      <div class="verdict" id="verdict"></div>
+      <div class="meter"><i id="bar"></i></div>
+      <div class="pct" id="pct"></div>
+      <ul id="reasons"></ul>
+    </div>
+  </div>
+
+  <p class="note">Ye tool ek ML model hai jo {{ metrics.dataset_rows }} asal phishing aur asal
+  websites par trained hai. Koi bhi tool 100% sahi nahi hota — paise ya password
+  wala faisla hamesha website ka asal domain dekh kar hi lo.</p>
+</div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  async function check(url) {
+    if (!url) return;
+    $('go').textContent = 'Check ho raha hai...';
+    try {
+      const r = await fetch('/api/check', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      });
+      const d = await r.json();
+      const box = $('result');
+      box.style.display = 'block';
+      box.className = d.risk_level;
+      $('verdict').textContent =
+        d.verdict === 'PHISHING' ? '🚨 PHISHING — KHATARNAK LINK' :
+        d.verdict === 'SUSPICIOUS' ? '⚠️ SHAK WALA LINK — SAMBHAL KE' :
+        '✅ LIKELY SAFE — ASAL LAGTA HAI';
+      $('bar').style.width = d.risk_percent + '%';
+      $('pct').textContent = 'Phishing risk: ' + d.risk_percent + '%';
+      $('reasons').innerHTML = d.reasons.map(x => '<li>' + x + '</li>').join('');
+    } catch (e) {
+      alert('Kuch gadbad ho gayi, dobara try karo.');
+    }
+    $('go').textContent = 'Check Karo';
+  }
+  $('go').onclick = () => check($('url').value.trim());
+  $('url').addEventListener('keydown', e => { if (e.key === 'Enter') check($('url').value.trim()); });
+  document.querySelectorAll('.chip').forEach(c => c.onclick = () => {
+    $('url').value = c.dataset.u; check(c.dataset.u);
+  });
+</script>
+</body>
+</html>

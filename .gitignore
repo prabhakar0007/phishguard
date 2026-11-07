@@ -1,0 +1,5 @@
+__pycache__/
+.venv/
+data/openphish.txt
+data/phishingdb.txt
+data/tranco.zip

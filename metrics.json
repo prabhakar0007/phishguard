@@ -1,0 +1,89 @@
+{
+  "test_rows": 2400,
+  "accuracy": 0.9654,
+  "precision_phishing": 0.9705,
+  "recall_phishing": 0.96,
+  "f1_phishing": 0.9652,
+  "confusion_matrix": [
+    [
+      1165,
+      35
+    ],
+    [
+      48,
+      1152
+    ]
+  ],
+  "dataset_rows": 12000,
+  "features": [
+    "url_length",
+    "hostname_length",
+    "path_length",
+    "num_dots_host",
+    "num_hyphens_host",
+    "num_digits_host",
+    "has_ip_host",
+    "num_subdomains",
+    "is_https",
+    "has_at_symbol",
+    "has_double_slash_path",
+    "num_query_params",
+    "has_port",
+    "suspicious_tld",
+    "brand_in_host",
+    "brand_in_path",
+    "keyword_count",
+    "entropy_host",
+    "digit_ratio_url",
+    "num_percent",
+    "num_underscore",
+    "is_shortener",
+    "has_punycode",
+    "https_in_text",
+    "tld_length",
+    "special_char_count",
+    "domain_rank_bucket"
+  ],
+  "top_features": [
+    [
+      "domain_rank_bucket",
+      0.3289
+    ],
+    [
+      "url_length",
+      0.1448
+    ],
+    [
+      "hostname_length",
+      0.1292
+    ],
+    [
+      "entropy_host",
+      0.1185
+    ],
+    [
+      "path_length",
+      0.0676
+    ],
+    [
+      "is_https",
+      0.0538
+    ],
+    [
+      "digit_ratio_url",
+      0.0269
+    ],
+    [
+      "special_char_count",
+      0.0258
+    ],
+    [
+      "num_digits_host",
+      0.0222
+    ],
+    [
+      "num_hyphens_host",
+      0.0184
+    ]
+  ]
+}
